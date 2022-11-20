@@ -4,6 +4,7 @@ import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
 import com.wustzdy.springboot.elasticsearch.bean.EsClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
@@ -23,8 +24,8 @@ public class EsclientTest {
 
     @Autowired
     private EsClient esClient;
-    String index="person";
-    String type="main";
+    String index = "person";
+    String type = "main";
 
     @Test
     public void createIndex() throws IOException {
@@ -32,25 +33,35 @@ public class EsclientTest {
         //关于准备索引的结构的aappings
         XContentBuilder mappings = JsonXContent.contentBuilder()
                 .startObject()
-                    .startObject("properties")
-                        .startObject("name")
-                           .field("type","text")
-                        .endObject()
-                        .startObject("age")
-                            .field("type","integer")
-                        .endObject()
-                        .startObject("birthday")
-                             .field("type","date")
-                             .field("format","yyyy-MM-dd")
-                        .endObject()
-                    .endObject()
+                .startObject("properties")
+                .startObject("name")
+                .field("type", "text")
+                .endObject()
+                .startObject("age")
+                .field("type", "integer")
+                .endObject()
+                .startObject("birthday")
+                .field("type", "date")
+                .field("format", "yyyy-MM-dd")
+                .endObject()
+                .endObject()
                 .endObject();
 
         CreateIndexRequest request = new CreateIndexRequest(index)
                 .settings(settings)
-                .mapping(type,mappings);
+                .mapping(type, mappings);
         RestHighLevelClient client = esClient.restHighLevelClient();
         CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
         System.out.println("创建成功，创建的索引名为：" + response.toString());
+    }
+
+    //检查索引是否存在
+    @Test
+    public void exists() throws IOException {
+        GetIndexRequest request = new GetIndexRequest();
+        request.indices(index);
+        RestHighLevelClient client = esClient.restHighLevelClient();
+        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+        System.out.println("exists:" + exists);
     }
 }
