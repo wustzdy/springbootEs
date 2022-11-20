@@ -7,6 +7,7 @@ import com.wustzdy.springboot.elasticsearch.bean.EsClient;
 import com.wustzdy.springboot.elasticsearch.bean.Person;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.RequestOptions;
@@ -50,6 +51,19 @@ public class EsclientBatchDocTest {
         RestHighLevelClient client = esClient.restHighLevelClient();
         BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
         System.out.println("bulk添加文档：" + response.toString());
+
+    }
+
+    @Test
+    public void bulkDocDelete() throws IOException {
+        BulkRequest bulkRequest = new BulkRequest();
+        bulkRequest.add(new DeleteRequest(index, type, "1"));
+        bulkRequest.add(new DeleteRequest(index, type, "2"));
+        bulkRequest.add(new DeleteRequest(index, type, "3"));
+
+        RestHighLevelClient client = esClient.restHighLevelClient();
+        BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        System.out.println("bulk删除文档：" + response.toString());
 
     }
 }
