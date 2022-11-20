@@ -10,24 +10,28 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
@@ -420,6 +424,8 @@ public class TestData {
         }
     }
 
+    //fuzzy查询
+    //模糊查询    通过kibana可以看到，虽然把  "盒马鲜生"  写错了，但是也可以查到     prefix_length表示前多少个字符不能出错
     @Test
     public void fuzzySearch() throws IOException {
         SearchRequest request = new SearchRequest(index);
@@ -468,6 +474,69 @@ public class TestData {
         for (SearchHit hit : response.getHits().getHits()) {
             System.out.println(hit.getSourceAsMap());
         }
+    }
+
+    //深分页scroll查询
+    @Test
+    public void scrollSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        //指定scroll信息
+        //指定scroll生存时间
+        request.scroll(TimeValue.MINUS_ONE);
+        //指定查询条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.size(4);
+        builder.sort("fee", SortOrder.DESC);
+        builder.query(QueryBuilders.matchAllQuery());
+        request.source(builder);
+
+        //获取返回结构scrollId,source
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        String scrollId = response.getScrollId();
+        System.out.println("-----首页-----");
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+
+        while (true) {
+            //循环 创建SearchScrollRequest   指定scrollId
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+            //指定scrollId生存时间
+            scrollRequest.scroll(TimeValue.MINUS_ONE);
+            //执行查询获取返回结果
+            SearchResponse searchResponse = getClient().scroll(scrollRequest, RequestOptions.DEFAULT);
+            //判断是否查询到了数据，输出
+            SearchHit[] hits = searchResponse.getHits().getHits();
+            if (hits != null && hits.length > 0) {
+                System.out.println("----下一页----");
+                for (SearchHit hit : hits) {
+                    System.out.println(hit.getSourceAsMap());
+                }
+            } else {
+                //判断没有查到数据，退出循环
+                System.out.println("----结束----");
+                break;
+            }
+        }
+        //创建clearScrollRequest
+        ClearScrollRequest clearScrollRequest = new ClearScrollRequest();
+        //指定scrollId
+        clearScrollRequest.addScrollId(scrollId);
+        //删除
+        ClearScrollResponse clearScrollResponse = getClient().clearScroll(clearScrollRequest, RequestOptions.DEFAULT);
+        System.out.println("删除scroll:" + clearScrollResponse.isSucceeded());
+    }
+
+    @Test
+    public void deleteByQuery() throws IOException {
+        DeleteByQueryRequest deleteByQueryRequest = new DeleteByQueryRequest();
+        deleteByQueryRequest.types(type);
+        deleteByQueryRequest.setQuery(QueryBuilders.rangeQuery("fee").lt(4));
+        BulkByScrollResponse response = getClient().deleteByQuery(deleteByQueryRequest, RequestOptions.DEFAULT);
+        System.out.println("deleteByQuery response:" + response.toString());
+
+
     }
 
     public RestHighLevelClient getClient() {
