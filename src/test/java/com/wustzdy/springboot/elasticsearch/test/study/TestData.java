@@ -16,6 +16,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -292,6 +293,48 @@ public class TestData {
         builder.query(QueryBuilders.matchAllQuery());
         // 默认只显示10条数据，想查询更多，需要设置size
         //builder.size(20);
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, Object> result = hit.getSourceAsMap();
+            System.out.println(result);
+        }
+    }
+
+    /**
+     * match查询
+     *
+     * @throws IOException
+     */
+    @Test
+    public void matchQuery() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.matchQuery("smsContent", "收获安装"));
+        // 默认只显示10条数据，想查询更多，需要设置size
+        //builder.size(20);
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, Object> result = hit.getSourceAsMap();
+            System.out.println(result);
+        }
+    }
+
+    /**
+     * booleanMatch查询
+     *
+     * @throws IOException
+     */
+    @Test
+    public void booleanMatchQuery() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        //Operator.AND   Operator.OR
+        builder.query(QueryBuilders.matchQuery("smsContent", "中国 健康").operator(Operator.AND));
         request.source(builder);
         SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
         for (SearchHit hit : response.getHits().getHits()) {
