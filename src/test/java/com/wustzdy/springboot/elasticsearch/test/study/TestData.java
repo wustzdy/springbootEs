@@ -26,7 +26,9 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.range.Range;
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.stats.extended.ExtendedStats;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -652,6 +654,7 @@ public class TestData {
             System.out.println(hit.getHighlightFields().get("smsContent"));
         }
     }
+
     //聚合查询
     //去重计数统计
     //
@@ -662,13 +665,54 @@ public class TestData {
         request.types(type);
 
         SearchSourceBuilder builder = new SearchSourceBuilder();
-        builder.aggregation( AggregationBuilders.cardinality("agg").field("province"));
+        builder.aggregation(AggregationBuilders.cardinality("agg").field("province"));
 
         request.source(builder);
 
         SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
         Cardinality cardinality = response.getAggregations().get("agg");
         System.out.println(cardinality.getValueAsString());
+    }
+
+    //范围统计
+    //
+    //统计一定范围内出现的文档个数，比如：针对某一个field的值在0-100,200-300之间文档出现的个数分别是多少。
+    //
+    //范围统计可以针对普通的数值，针对时间类型，针对ip类型都可以做相应统计 （range、date_range、ip_range）
+    @Test
+    public void rangeCountSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.aggregation(AggregationBuilders.range("agg").field("fee")
+                .addUnboundedTo(5)
+                .addRange(5, 10)
+                .addUnboundedFrom(10));
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        Range agg = response.getAggregations().get("agg");
+        for (Range.Bucket bucket : agg.getBuckets()) {
+            String key = bucket.getKeyAsString();
+            Object from = bucket.getFrom();
+            Object to = bucket.getTo();
+            long docCount = bucket.getDocCount();
+            System.out.println(String.format("key:%s,from:%s,to:%s,docCount:%s", key, from, to, docCount));
+        }
+    }
+
+    //统计聚合查询
+    @Test
+    public void extendedSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.aggregation(AggregationBuilders.extendedStats("agg").field("fee"));
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        ExtendedStats agg = response.getAggregations().get("agg");
+        double max = agg.getMax();
+        double min = agg.getMin();
+        System.out.println(String.format("max:%s,min:%s", max, min));
     }
 
     public RestHighLevelClient getClient() {
