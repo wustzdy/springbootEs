@@ -403,6 +403,23 @@ public class TestData {
         }
     }
 
+    //wildcard查询
+    //通配查询，查询时在字符串中指定通配符* 和 占位符 ？
+    @Test
+    public void wildCardSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.wildcardQuery("corpName", "中国*"));
+
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
     @Test
     public void fuzzySearch() throws IOException {
         SearchRequest request = new SearchRequest(index);
