@@ -453,6 +453,23 @@ public class TestData {
         }
     }
 
+    //regexp查询：通过正则表达式匹配内容
+    //上文提到的 prefix、fuzzy、wildcard以及这里的regexp查询效率都比较低，要求效率比较高时尽量避免使用。
+    @Test
+    public void regexpSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.regexpQuery("mobile", "180[0-9]{8}"));
+
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
     public RestHighLevelClient getClient() {
         return esClient.restHighLevelClient();
     }
