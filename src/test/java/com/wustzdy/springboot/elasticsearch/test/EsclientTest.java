@@ -4,7 +4,9 @@ import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
 import com.wustzdy.springboot.elasticsearch.bean.EsClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
@@ -63,5 +65,15 @@ public class EsclientTest {
         RestHighLevelClient client = esClient.restHighLevelClient();
         boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
         System.out.println("exists:" + exists);
+    }
+    //删除索引
+    @Test
+    public void delete() throws IOException {
+        DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest();
+        deleteIndexRequest.indices(index);
+        RestHighLevelClient client = esClient.restHighLevelClient();
+        AcknowledgedResponse delete = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+
+        System.out.println("delete:" + delete.isAcknowledged());
     }
 }
