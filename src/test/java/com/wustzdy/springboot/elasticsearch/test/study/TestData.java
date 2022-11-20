@@ -25,6 +25,8 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
@@ -624,6 +626,14 @@ public class TestData {
         }
     }
 
+    //高亮查询
+    //用户输入的关键字，以一定的特殊样式展示，es会提供一个highlight属性，和query同级别
+    //
+    //fragment_size：指定高亮数据展示多少个字符
+    //fields：指定哪几个field高亮显示
+    //pre_tags：指定前缀标签   举个例子<font color="red">
+    //post_tags：指定后缀标签   举例</font>
+    //————————————————
     @Test
     public void highLightSearch() throws IOException {
         SearchRequest request = new SearchRequest(index);
@@ -641,6 +651,24 @@ public class TestData {
         for (SearchHit hit : response.getHits().getHits()) {
             System.out.println(hit.getHighlightFields().get("smsContent"));
         }
+    }
+    //聚合查询
+    //去重计数统计
+    //
+    //Cardinality 即不重复的字段有多少（相当于sql中的distinct）
+    @Test
+    public void cardinality() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.aggregation( AggregationBuilders.cardinality("agg").field("province"));
+
+        request.source(builder);
+
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        Cardinality cardinality = response.getAggregations().get("agg");
+        System.out.println(cardinality.getValueAsString());
     }
 
     public RestHighLevelClient getClient() {
