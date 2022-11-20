@@ -2,6 +2,7 @@ package com.wustzdy.springboot.elasticsearch.test.study;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
+import com.wustzdy.springboot.elasticsearch.bean.JsonUtil.JsonUtil;
 import com.wustzdy.springboot.elasticsearch.bean.client.EsClient;
 import com.wustzdy.springboot.elasticsearch.bean.entity.SmsLogs;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
@@ -273,7 +274,7 @@ public class TestData {
         SearchHit[] hits = response.getHits().getHits();
         for (SearchHit searchHit : hits) {
             Map<String, Object> result = searchHit.getSourceAsMap();
-            System.out.println(result);
+            System.out.println("使用term方式查询:" + JsonUtil.object2Json(result));
         }
     }
 
