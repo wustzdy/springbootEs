@@ -1,4 +1,4 @@
-package com.wustzdy.springboot.elasticsearch.test;
+package com.wustzdy.springboot.elasticsearch.test.standard;
 
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
 import com.wustzdy.springboot.elasticsearch.bean.EsClient;

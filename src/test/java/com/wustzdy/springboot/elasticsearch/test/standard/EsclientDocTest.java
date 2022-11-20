@@ -1,10 +1,9 @@
-package com.wustzdy.springboot.elasticsearch.test;
+package com.wustzdy.springboot.elasticsearch.test.standard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
 import com.wustzdy.springboot.elasticsearch.bean.EsClient;
-import com.wustzdy.springboot.elasticsearch.bean.Person;
-import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import com.wustzdy.springboot.elasticsearch.bean.entity.Person;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
