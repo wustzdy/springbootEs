@@ -435,6 +435,24 @@ public class TestData {
         }
     }
 
+    //range查询
+    //范围查询，只针对数值类型，对某一个field进行大于或者小于的指定
+    @Test
+    public void rangeSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        //gt >  gte >=   lt <  lte <=
+        builder.query(QueryBuilders.rangeQuery("fee").gt(5).lte(10));
+
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
     public RestHighLevelClient getClient() {
         return esClient.restHighLevelClient();
     }
