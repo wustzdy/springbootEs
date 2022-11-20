@@ -1,7 +1,7 @@
 package com.wustzdy.springboot.elasticsearch.test.standard;
 
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
-import com.wustzdy.springboot.elasticsearch.bean.EsClient;
+import com.wustzdy.springboot.elasticsearch.bean.client.EsClient;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;

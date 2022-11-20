@@ -1,4 +1,4 @@
-package com.wustzdy.springboot.elasticsearch.bean;
+package com.wustzdy.springboot.elasticsearch.bean.client;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;

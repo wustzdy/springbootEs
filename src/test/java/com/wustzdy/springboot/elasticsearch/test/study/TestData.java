@@ -2,7 +2,7 @@ package com.wustzdy.springboot.elasticsearch.test.study;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
-import com.wustzdy.springboot.elasticsearch.bean.EsClient;
+import com.wustzdy.springboot.elasticsearch.bean.client.EsClient;
 import com.wustzdy.springboot.elasticsearch.bean.entity.SmsLogs;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;

@@ -1,4 +1,4 @@
-package com.wustzdy.springboot.elasticsearch.bean;
+package com.wustzdy.springboot.elasticsearch.bean.web;
 
 
 import org.springframework.web.bind.annotation.RestController;
