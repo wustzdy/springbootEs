@@ -372,6 +372,22 @@ public class TestData {
         System.out.println(response.getSourceAsMap());
     }
 
+    //ids查询  类似mysql中的 where id in(id1,id2.....)
+    @Test
+    public void idsSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.idsQuery().addIds("21", "22", "23"));
+
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
     public RestHighLevelClient getClient() {
         return esClient.restHighLevelClient();
     }
