@@ -18,6 +18,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -537,6 +538,30 @@ public class TestData {
         System.out.println("deleteByQuery response:" + response.toString());
 
 
+    }
+
+    @Test
+    public void boolSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.should(QueryBuilders.termQuery("province", "武汉"));
+        boolQueryBuilder.should(QueryBuilders.termQuery("province", "北京"));
+
+        boolQueryBuilder.mustNot(QueryBuilders.termQuery("operatorId", "2"));
+
+        boolQueryBuilder.must(QueryBuilders.matchQuery("smsContent", "中国"));
+        boolQueryBuilder.must(QueryBuilders.matchQuery("smsContent", "平安"));
+
+        builder.query(boolQueryBuilder);
+        request.source(builder);
+
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
     }
 
     public RestHighLevelClient getClient() {
