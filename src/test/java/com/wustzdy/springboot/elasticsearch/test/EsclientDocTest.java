@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wustzdy.springboot.elasticsearch.SpringBootElasticsearchApplication;
 import com.wustzdy.springboot.elasticsearch.bean.EsClient;
 import com.wustzdy.springboot.elasticsearch.bean.Person;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.update.UpdateRequest;
@@ -61,4 +64,14 @@ public class EsclientDocTest {
         System.out.println("更新文档：" + updateResponse.getResult().toString());
 
     }
+
+    @Test
+    public void deleteDoc() throws IOException {
+        DeleteRequest deleteIndexRequest = new DeleteRequest(index, type, "1");
+        RestHighLevelClient client = esClient.restHighLevelClient();
+        DeleteResponse delete = client.delete(deleteIndexRequest, RequestOptions.DEFAULT);
+        System.out.println("删除文档：" + delete.getResult().toString());
+    }
+
+
 }
