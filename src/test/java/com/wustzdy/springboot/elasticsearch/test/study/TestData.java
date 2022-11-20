@@ -26,6 +26,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.elasticsearch.index.reindex.DeleteByQueryRequest;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -572,6 +573,18 @@ public class TestData {
         }
     }
 
+    //boosting查询
+    //
+    //boosting查询可以帮助我们影响查询后的score
+    //
+    //positive：只有匹配上positive的内容，才会被放入结果集中
+    //negative：如果匹配上positive并且也匹配上negative，就可以降低这样的文档分数
+    //negative_boost：指定系数，必须小于1
+    //关于查询时，分数如何计算：
+    //
+    //搜索的关键字在文档中出现频次越高则分数越高
+    //指定的文档内容越短，则分数越高
+    //搜索时，指定的关键字被分词，被分词的内容与分词库匹配的个数越多，则分数越高
     @Test
     public void boostingSearch() throws IOException {
         SearchRequest request = new SearchRequest(index);
@@ -588,6 +601,45 @@ public class TestData {
         SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
         for (SearchHit hit : response.getHits().getHits()) {
             System.out.println(hit.getSourceAsMap());
+        }
+    }
+
+    //filter查询
+    //filter根据查询条件去查询文档，不计算分数，会对经常被过滤的数据进行缓存
+    @Test
+    public void filterSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.filter(QueryBuilders.termQuery("corpName", "盒马鲜生"));
+        boolQueryBuilder.filter(QueryBuilders.rangeQuery("fee").lte("5"));
+        builder.query(boolQueryBuilder);
+        request.source(builder);
+
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
+    @Test
+    public void highLightSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.matchQuery("smsContent", "盒马"));
+
+        HighlightBuilder highlightBuilder = new HighlightBuilder();
+        highlightBuilder.field("smsContent", 10).preTags("<font color='orange'>").postTags("</font>");
+        builder.highlighter(highlightBuilder);
+        request.source(builder);
+
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getHighlightFields().get("smsContent"));
         }
     }
 
