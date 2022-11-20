@@ -278,6 +278,28 @@ public class TestData {
         }
     }
 
+    /**
+     * matchAll
+     *
+     * @throws IOException
+     */
+    @Test
+    public void matchAllQuery() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.query(QueryBuilders.matchAllQuery());
+        // 默认只显示10条数据，想查询更多，需要设置size
+        //builder.size(20);
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, Object> result = hit.getSourceAsMap();
+            System.out.println(result);
+        }
+    }
+
     public RestHighLevelClient getClient() {
         return esClient.restHighLevelClient();
     }
