@@ -7,6 +7,8 @@ import com.wustzdy.springboot.elasticsearch.bean.client.EsClient;
 import com.wustzdy.springboot.elasticsearch.bean.entity.SmsLogs;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
@@ -341,6 +343,33 @@ public class TestData {
             Map<String, Object> result = hit.getSourceAsMap();
             System.out.println(result);
         }
+    }
+
+    /**
+     * multiMatch查询 multi_match查询:查询为能在多个字段上反复执行相同查询提供了一种便捷方式
+     *
+     * @throws IOException
+     */
+    @Test
+    public void MultiMatchQuery() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        //多字段
+        builder.query(QueryBuilders.multiMatchQuery("北京", "province", "smsContent"));
+        request.source(builder);
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            Map<String, Object> result = hit.getSourceAsMap();
+            System.out.println(result);
+        }
+    }
+
+    @Test
+    public void idSearch() throws IOException {
+        GetRequest request = new GetRequest(index, type, "21");
+        GetResponse response = getClient().get(request, RequestOptions.DEFAULT);
+        System.out.println(response.getSourceAsMap());
     }
 
     public RestHighLevelClient getClient() {
