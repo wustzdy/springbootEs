@@ -53,7 +53,7 @@ public class EsclientTest {
                 .settings(settings)
                 .mapping(type, mappings);
         RestHighLevelClient client = esClient.restHighLevelClient();
-        CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
+        CreateIndexResponse response = getClient().indices().create(request, RequestOptions.DEFAULT);
         System.out.println("创建成功，创建的索引名为：" + response.toString());
     }
 
@@ -62,8 +62,7 @@ public class EsclientTest {
     public void exists() throws IOException {
         GetIndexRequest request = new GetIndexRequest();
         request.indices(index);
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+        boolean exists = getClient().indices().exists(request, RequestOptions.DEFAULT);
         System.out.println("exists:" + exists);
     }
     //删除索引
@@ -71,9 +70,11 @@ public class EsclientTest {
     public void delete() throws IOException {
         DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest();
         deleteIndexRequest.indices(index);
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        AcknowledgedResponse delete = client.indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
+        AcknowledgedResponse delete = getClient().indices().delete(deleteIndexRequest, RequestOptions.DEFAULT);
 
         System.out.println("delete:" + delete.isAcknowledged());
+    }
+    public RestHighLevelClient getClient() {
+        return esClient.restHighLevelClient();
     }
 }

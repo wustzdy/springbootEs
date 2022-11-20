@@ -45,7 +45,7 @@ public class EsclientDocTest {
         IndexRequest request = new IndexRequest(index, type, person.getId().toString());
         request.source(json, XContentType.JSON);
         RestHighLevelClient client = esClient.restHighLevelClient();
-        IndexResponse response = client.index(request, RequestOptions.DEFAULT);
+        IndexResponse response = getClient().index(request, RequestOptions.DEFAULT);
         System.out.println("添加文档：" + response.getResult().toString());
 
     }
@@ -58,8 +58,7 @@ public class EsclientDocTest {
 
         UpdateRequest updateRequest = new UpdateRequest(index, type, docId);
         updateRequest.doc(map);
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        UpdateResponse updateResponse = client.update(updateRequest, RequestOptions.DEFAULT);
+        UpdateResponse updateResponse = getClient().update(updateRequest, RequestOptions.DEFAULT);
         System.out.println("更新文档：" + updateResponse.getResult().toString());
 
     }
@@ -67,9 +66,11 @@ public class EsclientDocTest {
     @Test
     public void deleteDoc() throws IOException {
         DeleteRequest deleteIndexRequest = new DeleteRequest(index, type, "1");
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        DeleteResponse delete = client.delete(deleteIndexRequest, RequestOptions.DEFAULT);
+        DeleteResponse delete = getClient().delete(deleteIndexRequest, RequestOptions.DEFAULT);
         System.out.println("删除文档：" + delete.getResult().toString());
+    }
+    public RestHighLevelClient getClient() {
+        return esClient.restHighLevelClient();
     }
 
 

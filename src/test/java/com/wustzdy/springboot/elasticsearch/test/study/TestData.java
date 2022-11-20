@@ -7,12 +7,17 @@ import com.wustzdy.springboot.elasticsearch.bean.entity.SmsLogs;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +26,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringBootElasticsearchApplication.class)
@@ -92,8 +98,7 @@ public class TestData {
         CreateIndexRequest request = new CreateIndexRequest(index);
         request.settings(settings);
         request.mapping(type, mapping);
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        client.indices().create(request, RequestOptions.DEFAULT);
+        getClient().indices().create(request, RequestOptions.DEFAULT);
         System.out.println("OK!!");
     }
 
@@ -240,9 +245,39 @@ public class TestData {
         request.add(new IndexRequest(index, type, "32").source(mapper.writeValueAsString(smsLogs5), XContentType.JSON));
         // -------------------------------------------------------------------------------------------------------------------
 
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        client.bulk(request, RequestOptions.DEFAULT);
+        getClient().bulk(request, RequestOptions.DEFAULT);
 
         System.out.println("OK!");
+    }
+
+    /**
+     * 使用term方式查询
+     *
+     * @throws IOException
+     */
+    @Test
+    public void TermQuery() throws IOException {
+        //获取request对象
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+        //指定查询条件
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        builder.from(0);
+        builder.size(3);
+        builder.query(QueryBuilders.termQuery("province", "北京"));
+        request.source(builder);
+        //执行查询
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        //获取_source的数据，并展示
+
+        SearchHit[] hits = response.getHits().getHits();
+        for (SearchHit searchHit : hits) {
+            Map<String, Object> result = searchHit.getSourceAsMap();
+            System.out.println(result);
+        }
+    }
+
+    public RestHighLevelClient getClient() {
+        return esClient.restHighLevelClient();
     }
 }

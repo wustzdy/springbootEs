@@ -46,8 +46,7 @@ public class EsclientBatchDocTest {
         bulkRequest.add(new IndexRequest(index, type, person2.getId().toString()).source(json2, XContentType.JSON));
         bulkRequest.add(new IndexRequest(index, type, person3.getId().toString()).source(json3, XContentType.JSON));
 
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        BulkResponse response = getClient().bulk(bulkRequest, RequestOptions.DEFAULT);
         System.out.println("bulk添加文档：" + response.toString());
 
     }
@@ -59,9 +58,12 @@ public class EsclientBatchDocTest {
         bulkRequest.add(new DeleteRequest(index, type, "2"));
         bulkRequest.add(new DeleteRequest(index, type, "3"));
 
-        RestHighLevelClient client = esClient.restHighLevelClient();
-        BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        BulkResponse response = getClient().bulk(bulkRequest, RequestOptions.DEFAULT);
         System.out.println("bulk删除文档：" + response.toString());
 
+    }
+
+    public RestHighLevelClient getClient() {
+        return esClient.restHighLevelClient();
     }
 }
