@@ -19,6 +19,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.BoostingQueryBuilder;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.reindex.BulkByScrollResponse;
@@ -540,6 +541,13 @@ public class TestData {
 
     }
 
+    /* 复合查询
+             bool查询
+     复合过滤器，将多个查询条件，以一定的逻辑组合在一起
+     must 所有的条件，用must组合在一起，表示And的意思
+     must_not  must_not中的条件全部都不匹配，表示Not的意思
+     should  所有的条件用should组合在一起，表示 Or 的意思
+     */
     @Test
     public void boolSearch() throws IOException {
         SearchRequest request = new SearchRequest(index);
@@ -556,6 +564,25 @@ public class TestData {
         boolQueryBuilder.must(QueryBuilders.matchQuery("smsContent", "平安"));
 
         builder.query(boolQueryBuilder);
+        request.source(builder);
+
+        SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
+        for (SearchHit hit : response.getHits().getHits()) {
+            System.out.println(hit.getSourceAsMap());
+        }
+    }
+
+    @Test
+    public void boostingSearch() throws IOException {
+        SearchRequest request = new SearchRequest(index);
+        request.types(type);
+
+        SearchSourceBuilder builder = new SearchSourceBuilder();
+        BoostingQueryBuilder boostingQueryBuilder = QueryBuilders.boostingQuery(
+                QueryBuilders.matchQuery("smsContent", "收获安装"),
+                QueryBuilders.matchQuery("smsContent", "刘红")
+        ).negativeBoost(0.5f);
+        builder.query(boostingQueryBuilder);
         request.source(builder);
 
         SearchResponse response = getClient().search(request, RequestOptions.DEFAULT);
